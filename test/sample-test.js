@@ -6,7 +6,7 @@ const { isCallTrace } = require('hardhat/internal/hardhat-network/stack-traces/m
 
 
 describe("testing upgradable contracts",()=>{
-  let proxy,initial,upgrade,owner1,initialProxy,v3;
+  let proxy,initial,upgrade,owner1,initialProxy,v3,v3Proxy;
   beforeEach(async()=>{
 
     [owner1,signer1] = await ethers.getSigners();
@@ -20,10 +20,13 @@ describe("testing upgradable contracts",()=>{
     initial = await Initial.deploy();
     // console.log("initial address",initial.address);
     initialProxy = initial.attach(proxy.address);
+ 
     // console.log("initialproxy address",initialProxy.address);
     upgrade = await UpgradeA.deploy();
 
     v3 = await Version3.deploy();
+    
+    v3Proxy = v3.attach(proxy.address)
 })
 describe("testing the proxie",()=>{
   it("checking the implementation",async()=>{
@@ -67,16 +70,11 @@ it("checking for version 3 ",async()=>{
   expect(initialProxy.initialize(10)).to.be.revertedWith("OwnedUpgradeabilityProxy: 4 INVALID");
   await proxy.upgradeTo(v3.address);
 
-    // await initialProxy.enterName("hemanth");
-    // const name = await initialProxy.getName();
-    await initialProxy.initialize(10);
-    
-     expect(await initialProxy.get()).to.equal(10);
+  await initialProxy.initialize(10);
+  
+   expect(await initialProxy.get()).to.equal(10);
 
-    // expect(name).to.equal("hemanth");
-
-
-    const num = await v3.get();
+  const num = await v3.get();
     expect(num).to.equal(0);
 
     await v3.increament();
@@ -86,6 +84,18 @@ it("checking for version 3 ",async()=>{
     expect(await initialProxy.get()).to.equal(20);
     
   })
+  it("checking the new functions in the v3 with v3Proxy",async()=>{
+    await proxy.upgradeTo(v3.address);
+    await v3Proxy.enterName("hemanth");
+    const name = await v3Proxy.getName();
+    expect(name).to.equal("hemanth");
+})
+it("checking the new functions in the v3 with InitialProxy",async()=>{
+  await proxy.upgradeTo(v3.address);
+  await initialProxy.enterName("hemanth");
+  const name = await initialProxy.getName();
+  expect(name).to.equal("hemanth");
+})
 
 
   it("if the other address calls the onlyadmin functions it gets rejected ",async()=>{
