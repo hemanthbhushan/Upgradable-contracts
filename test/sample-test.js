@@ -29,6 +29,8 @@ describe("testing the proxie",()=>{
   it("checking the implementation",async()=>{
 
     
+
+    
     await proxy.upgradeTo(upgrade.address);
 
     
@@ -59,31 +61,33 @@ describe("testing the proxie",()=>{
     expect(balance2).to.equal(20);
 
     // upgrading to version 3
+})
+it("checking for version 3 ",async()=>{
 
-    // await proxy.upgradeTo(v3.address);
-
-    // // await initialProxy.enterName("hemanth");
-    // // const name = await initialProxy.getName();
-    // const balance3 = await initialProxy.get();
-
-
-    // // expect(name).to.equal("hemanth");
-    // expect(balance3).to.equal(20);
-
-    // await initialProxy.initialize(1);
-
-    // expect(await initialProxy.get()).to.equal(1);
-
- })
- it("check the upgradation",async()=>{
+  expect(initialProxy.initialize(10)).to.be.revertedWith("OwnedUpgradeabilityProxy: 4 INVALID");
   await proxy.upgradeTo(v3.address);
 
-  // await initialProxy.enterName("hemanth");
-  // const namee = await initialProxy.getName();
-  
-  balance = await initialProxy.get();
-  console.log("name is",balance);
- }) 
+    // await initialProxy.enterName("hemanth");
+    // const name = await initialProxy.getName();
+    await initialProxy.initialize(10);
+    
+     expect(await initialProxy.get()).to.equal(10);
+
+    // expect(name).to.equal("hemanth");
+
+
+    const num = await v3.get();
+    expect(num).to.equal(0);
+
+    await v3.increament();
+    expect(await v3.get()).to.equal(10);
+
+    await initialProxy.increament();
+    expect(await initialProxy.get()).to.equal(20);
+    
+  })
+
+
   it("if the other address calls the onlyadmin functions it gets rejected ",async()=>{
     expect(proxy.connect(signer1).upgradeTo(initial.address)).to.be.revertedWith("OwnedUpgradeabilityProxy: FORBIDDEN");
   })
